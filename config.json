@@ -1,5 +1,5 @@
 {
-  "url": "https://forms.gle/3LKKGFMPhP5gFGrq6",
+  "url": "https://forms.gle/2WyHaibbWLtd8zBu6",
   "count": 5,
   "max_workers": 4,
   "headless": false,
@@ -26,5 +26,11 @@
       "Motor",
       "Mobil"
     ]
+  },
+  "screening_answers": {
+    "apakah anda pengguna aktif": "Ya",
+    "apakah anda bersedia": "Ya / Setuju",
+    "apakah anda berdomisili": "Ya",
+    "apakah anda mahasiswa": "Ya"
   }
 }

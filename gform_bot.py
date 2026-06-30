@@ -71,6 +71,7 @@ class Config:
     max_delay: float = 4.0
     page_timeout: int = 15
     answers: dict[str, str] = field(default_factory=dict)
+    screening_answers: dict[str, str] = field(default_factory=dict)
     default_answer: str = "Jawaban uji otomatis"
     test_marker: str = ""  # mis. "[TEST]" untuk menandai data uji; kosongkan jika tidak perlu
     max_workers: int = 4
@@ -177,6 +178,14 @@ def resolve_answer(val: Any, cfg: Config, is_checkbox: bool = False) -> Any:
 
 def answer_for(question_text: str, cfg: Config) -> Any:
     q = question_text.lower()
+    
+    # 1. Prioritaskan pengecekan jawaban screening / forced
+    if hasattr(cfg, "screening_answers") and cfg.screening_answers:
+        for keyword, value in cfg.screening_answers.items():
+            if keyword.lower() in q:
+                return value
+                
+    # 2. Cek jawaban reguler
     for keyword, value in cfg.answers.items():
         if keyword.lower() in q:
             return value
@@ -558,9 +567,11 @@ def run_once(driver, cfg: Config, n: int) -> bool:
     while page_num <= max_pages:
         log.info("#%d (Halaman %d): Menunggu pertanyaan...", n, page_num)
         try:
-            # Tunggu salah satu muncul: input pertanyaan atau tombol navigasi
+            # Tunggu salah satu muncul: input pertanyaan, tombol berikutnya, atau tombol kirim
             WebDriverWait(driver, cfg.page_timeout).until(
-                lambda d: d.find_elements(By.CSS_SELECTOR, 'div[role="listitem"]') or find_navigation_buttons(d)[1] is not None
+                lambda d: d.find_elements(By.CSS_SELECTOR, 'div[role="listitem"]')
+                or find_navigation_buttons(d)[0] is not None
+                or find_navigation_buttons(d)[1] is not None
             )
         except TimeoutException:
             log.error("#%d (Halaman %d): Halaman tidak termuat sepenuhnya (timeout).", n, page_num)
