@@ -8,7 +8,6 @@
   "page_timeout": 15,
   "default_answer": "Jawaban uji otomatis - {{timestamp}}",
   "test_marker": "",
-  "screenshot_dir": "screenshots",
   "answers": {
     "nama": "{{random_name}}",
     "email": "{{random_email}}",

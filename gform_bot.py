@@ -72,7 +72,6 @@ class Config:
     page_timeout: int = 15
     answers: dict[str, str] = field(default_factory=dict)
     default_answer: str = "Jawaban uji otomatis"
-    screenshot_dir: str = "screenshots"
     test_marker: str = ""  # mis. "[TEST]" untuk menandai data uji; kosongkan jika tidak perlu
     max_workers: int = 4
 
@@ -556,11 +555,6 @@ def run_once(driver, cfg: Config, n: int) -> bool:
     page_num = 1
     max_pages = 25  # Limit agar tidak terjadi infinite loop jika ada bug navigasi
     
-    # Siapkan direktori screenshot
-    shot_dir = Path(cfg.screenshot_dir)
-    shot_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
     while page_num <= max_pages:
         log.info("#%d (Halaman %d): Menunggu pertanyaan...", n, page_num)
         try:
@@ -570,11 +564,6 @@ def run_once(driver, cfg: Config, n: int) -> bool:
             )
         except TimeoutException:
             log.error("#%d (Halaman %d): Halaman tidak termuat sepenuhnya (timeout).", n, page_num)
-            path = shot_dir / f"timeout_{n:03d}_page{page_num}_{stamp}.png"
-            try:
-                driver.save_screenshot(str(path))
-            except Exception:
-                pass
             return False
             
         questions = driver.find_elements(By.CSS_SELECTOR, 'div[role="listitem"]')
@@ -602,11 +591,6 @@ def run_once(driver, cfg: Config, n: int) -> bool:
         errors_before = check_validation_errors(driver)
         if errors_before:
             log.error("#%d (Halaman %d): Error validasi terdeteksi sebelum pindah/submit: %s", n, page_num, errors_before)
-            path = shot_dir / f"err_before_{n:03d}_page{page_num}_{stamp}.png"
-            try:
-                driver.save_screenshot(str(path))
-            except Exception:
-                pass
             return False
             
         if next_btn:
@@ -619,11 +603,6 @@ def run_once(driver, cfg: Config, n: int) -> bool:
             errors_after = check_validation_errors(driver)
             if errors_after:
                 log.error("#%d (Halaman %d): Error validasi mencegah pindah halaman: %s", n, page_num - 1, errors_after)
-                path = shot_dir / f"err_next_{n:03d}_page{page_num-1}_{stamp}.png"
-                try:
-                    driver.save_screenshot(str(path))
-                except Exception:
-                    pass
                 return False
         elif submit_btn:
             log.info("#%d (Halaman %d): Mengklik tombol 'Kirim'...", n, page_num)
@@ -634,34 +613,18 @@ def run_once(driver, cfg: Config, n: int) -> bool:
             errors_after = check_validation_errors(driver)
             if errors_after:
                 log.error("#%d (Halaman %d): Error validasi mencegah submit: %s", n, page_num, errors_after)
-                path = shot_dir / f"err_submit_{n:03d}_{stamp}.png"
-                try:
-                    driver.save_screenshot(str(path))
-                except Exception:
-                    pass
                 return False
             break
         else:
             log.error("#%d (Halaman %d): Tombol navigasi ('Berikutnya' atau 'Kirim') tidak ditemukan.", n, page_num)
-            path = shot_dir / f"err_nobutton_{n:03d}_page{page_num}_{stamp}.png"
-            try:
-                driver.save_screenshot(str(path))
-            except Exception:
-                pass
             return False
             
     # Verifikasi Halaman Konfirmasi
     ok = wait_for_confirmation(driver, cfg.page_timeout)
-    path = shot_dir / f"submit_{n:03d}_{stamp}_{'ok' if ok else 'fail'}.png"
-    try:
-        driver.save_screenshot(str(path))
-    except WebDriverException:
-        pass
-        
     if ok:
-        log.info("#%d: BERHASIL terkirim. Screenshot: %s", n, path)
+        log.info("#%d: BERHASIL terkirim.", n)
     else:
-        log.error("#%d: Konfirmasi tidak terdeteksi setelah submit. Cek screenshot: %s", n, path)
+        log.error("#%d: Konfirmasi tidak terdeteksi setelah submit.", n)
     return ok
 
 
