@@ -690,9 +690,13 @@ def main() -> None:
     if args.max_delay is not None:
         cfg.max_delay = args.max_delay
 
-    if not cfg.url:
+    # Selalu minta input URL di terminal, tampilkan default dari config jika ada
+    if not args.url:
         try:
-            cfg.url = input("Masukkan URL Google Form Anda: ").strip()
+            default_prompt = f" [default: {cfg.url}]" if cfg.url else ""
+            url_input = input(f"Masukkan URL Google Form Anda{default_prompt}: ").strip()
+            if url_input:
+                cfg.url = url_input
         except (KeyboardInterrupt, EOFError):
             log.error("\nProses dibatalkan oleh pengguna. Keluar.")
             sys.exit(1)
