@@ -1,0 +1,19 @@
+{
+  "url": "https://forms.gle/3LKKGFMPhP5gFGrq6",
+  "count": 5,
+  "headless": false,
+  "min_delay": 2.0,
+  "max_delay": 4.0,
+  "page_timeout": 15,
+  "default_answer": "Jawaban uji otomatis",
+  "test_marker": "[TEST]",
+  "screenshot_dir": "screenshots",
+  "answers": {
+    "nama": "Budi Santoso",
+    "email": "budi@example.com",
+    "nim": "123456789",
+    "alasan": "Karena saya tertarik dengan topik ini dan ingin belajar lebih lanjut.",
+    "hobi": "Membaca",
+    "kendaraan": "Motor"
+  }
+}
